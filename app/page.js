@@ -1,0 +1,77 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import axios from "axios";
+
+export default function Home() {
+  const [image, setImage] = useState(null);
+  const [scanResult, setScanResult] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  // Automatically start the camera when the page loads
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error("Error accessing the camera:", error);
+      }
+    };
+
+    startCamera();
+  }, []);
+
+  const captureImage = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (video && canvas) {
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL("image/jpeg");
+      setImage(imageData);
+    }
+  };
+
+  const scanCard = async () => {
+    if (!image) return alert("Capture an image first!");
+
+    try {
+      const response = await axios.post("/api/scan", { imageUrl: image });
+      setScanResult(response.data);
+    } catch (error) {
+      console.error("Error scanning card:", error);
+    }
+  };
+
+  return (
+      <div className="container">
+        <h1>Sports Card Scanner</h1>
+        <video ref={videoRef} autoPlay playsInline width="100%" height="400px" />
+        <canvas ref={canvasRef} style={{ display: "none" }} width="640" height="480"></canvas>
+
+        <button onClick={captureImage}>Capture Image</button>
+        <button onClick={scanCard}>Scan Card</button>
+
+        {image && <img src={image} alt="Captured" style={{ marginTop: "20px", width: "100%" }} />}
+        {scanResult && (
+            <div>
+              <h2>Scan Result</h2>
+              <p><strong>Card Name:</strong> {scanResult.cardName}</p>
+              <p><strong>Timestamp:</strong> {scanResult.timestamp}</p>
+              <h3>Pricing:</h3>
+              <ul>
+                {scanResult.prices.map((price, index) => (
+                    <li key={index}>
+                      {price.name} - {price.category}
+                    </li>
+                ))}
+              </ul>
+            </div>
+        )}
+      </div>
+  );
+}
