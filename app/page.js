@@ -5,7 +5,7 @@ import axios from "axios";
 
 export default function Home() {
   const [image, setImage] = useState(null);
-  const [scanResult, setScanResult] = useState(null);
+  const [scanHistory, setScanHistory] = useState([]); // Store all scans
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -40,6 +40,10 @@ export default function Home() {
     const canvas = canvasRef.current;
     if (video && canvas) {
       const ctx = canvas.getContext("2d");
+
+      // ✅ Clear previous frame before capturing new one
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = canvas.toDataURL("image/jpeg");
       setImage(imageData);
@@ -47,16 +51,20 @@ export default function Home() {
   };
 
   const scanCard = async () => {
-    // if (!image) return alert("Capture an image first!");
+    if (!image) return alert("Capture an image first!");
 
     try {
       const response = await axios.post("/api/scan", { imageUrl: image });
-      setScanResult(response.data);
+
+      // ✅ Append new scan to history instead of replacing
+      setScanHistory((prevHistory) => [...prevHistory, response.data]);
     } catch (error) {
       console.error("Error scanning card:", error);
     }
   };
-console.log(JSON.stringify(scanResult))
+
+  console.log(JSON.stringify(scanHistory));
+
   return (
       <div className="container">
         <h1>Sports Card Scanner</h1>
@@ -67,14 +75,18 @@ console.log(JSON.stringify(scanResult))
         <button onClick={scanCard}>Scan Card</button>
 
         {image && <img src={image} alt="Captured" style={{ marginTop: "20px", width: "100%" }} />}
-        {scanResult && (
+
+        {/* ✅ Show all scanned cards */}
+        {scanHistory.length > 0 && (
             <div>
-              <h2>Scan Result</h2>
-              <p><strong>Card Name:</strong> {scanResult.prices[0]["product-name"]}</p>
-              <p><h3>Pricing:</h3>
-                {scanResult.prices[0]["loose-price"]}</p>
-              <p><h3>Grade:</h3>
-                {scanResult.grading["final"]}</p>
+              <h2>Scan History</h2>
+              {scanHistory.map((scan, index) => (
+                  <div key={index} style={{ border: "1px solid #ccc", padding: "10px", marginTop: "10px" }}>
+                    <h3>Scan #{index + 1}</h3>
+                    <p><strong>Card Name:</strong> {scan.ximilarData._objects[0]["_identification"]["best_match"]["full_name"]}</p>
+                    <p><strong>Pricing:</strong> ${(scan.productData[0]["loose-price"] / 100).toFixed(2)}</p>
+                  </div>
+              ))}
             </div>
         )}
       </div>

@@ -27,13 +27,13 @@ export async function POST(req) {
 
     try {
         // Identify card using Ximilar API
-        const identifyResponse = await axios.post(
+        const ximilarResponse = await axios.post(
             "https://api.ximilar.com/collectibles/v2/sport_id",
-            { records: [{ _base64: imageUrl }], pricing: false },
+            { records: [{ _base64: imageUrl }], pricing: true },
             { headers: { "Content-Type": "application/json", Authorization: `Token ${XIMILAR_API_KEY}` } }
         );
-        console.log(JSON.stringify(identifyResponse.data), "JKSDAHDKJAS")
-        const cardData = identifyResponse.data.records[0];
+        console.log(JSON.stringify(ximilarResponse.data), "JKSDAHDKJAS")
+        const cardData = ximilarResponse.data.records[0];
         if (!cardData) throw new Error("Card identification failed.");
 
         // Grade card using Ximilar API
@@ -48,20 +48,21 @@ export async function POST(req) {
 //         const gradeData = gradeResponse.data.records[0]?.grades || {};
 
         // Fetch price from SportsCardsPro API
-        const priceResponse = await axios.get(
+        const sportscardsproResponse = await axios.get(
             `https://www.sportscardspro.com/api/products?t=${SPORTSCARDSPRO_API_KEY}&q=${encodeURIComponent(cardData)}`
         );
 
-        if (priceResponse.data.status !== "success" || !priceResponse.data.products?.length) {
+        if (sportscardsproResponse.data.status !== "success" || !sportscardsproResponse.data.products?.length) {
             throw new Error("No matching products found.");
         }
 
-        const productData = priceResponse.data.products
+        const productData = sportscardsproResponse.data.products
 
         // Save scan history
         const scanResult = {
             timestamp: new Date().toISOString(),
-            prices: productData,
+            productData: productData,
+            ximilarData: cardData
             // grading: gradeData
         };
         db.data.scans.push(scanResult);
