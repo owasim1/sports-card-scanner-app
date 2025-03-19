@@ -78,8 +78,8 @@ export default function Home() {
               <p><strong>Card Name:</strong> {scanResult.prices[0]["product-name"]}</p>
               <p><h3>Pricing:</h3>
                 {scanResult.prices[0]["loose-price"]}</p>
-              <p><h3>Grade:</h3>
-                {scanResult.grading["final"]}</p>
+              {/*<p><h3>Grade:</h3>*/}
+              {/*  {scanResult.grading["final"]}</p>*/}
             </div>
         )}
       </div>
