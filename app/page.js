@@ -77,8 +77,8 @@ export default function Home() {
               {scanHistory.map((scan, index) => (
                   <div key={index} style={{ border: "1px solid #ccc", padding: "10px", marginTop: "10px" }}>
                     <h3>Scan #{index + 1}</h3>
-                    <p><strong>Card Name:</strong> {scan.ximilarData._objects[0]["_identification"]["best_match"]["full_name"]}</p>
-                    <p><strong>Pricing:</strong> ${scan.ximilarData._objects[0]["_identification"]["best_match"]?.pricing
+                    <p><strong>Card Name:</strong> {scan.ximilarData._objects[0]._identification?.best_match?.full_name ? scan.ximilarData._objects[0]._identification?.best_match?.full_name : scan.productData[0]["console-name"]  }</p>
+                    <p><strong>Pricing:</strong> ${scan.ximilarData._objects[0]._identification?.best_match?.pricing
                         ? scan.ximilarData._objects[0]["_identification"]["best_match"]?.pricing?.list[0]?.price
                         : (scan.productData[0]["loose-price"] / 100).toFixed(2)}</p>
                   </div>
