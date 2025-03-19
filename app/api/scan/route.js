@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
-import { Low } from "lowdb";
-import { JSONFile } from "lowdb/node";
+import {Low, Memory} from "lowdb";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -10,9 +9,9 @@ const XIMILAR_API_KEY = process.env.XIMILAR_API_KEY;
 const SPORTSCARDSPRO_API_KEY = process.env.SPORTSCARDSPRO_API_KEY;
 console.log(XIMILAR_API_KEY)
 console.log(SPORTSCARDSPRO_API_KEY)
-const adapter = new JSONFile("history.json");
-const db = new Low(adapter, { scans: [] });
 
+const adapter = new Memory();
+const db = new Low(adapter);
 await db.read();
 db.data ||= { scans: [] };
 
