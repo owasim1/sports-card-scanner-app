@@ -19,8 +19,8 @@ export async function POST(req) {
     await db.read();
     db.data ||= { scans: [] };
 
-    const { imageUrl } = await req.json();
-    // const imageUrl = "https://i.etsystatic.com/5850192/r/il/37282f/1285253180/il_fullxfull.1285253180_10gi.jpg"
+    // const { imageUrl } = await req.json();
+    const imageUrl = "https://i.etsystatic.com/5850192/r/il/37282f/1285253180/il_fullxfull.1285253180_10gi.jpg"
     if (!imageUrl) return NextResponse.json({ error: "Image URL required" }, { status: 400 });
 
     console.log("📸 Scanning:", imageUrl);
@@ -29,12 +29,23 @@ export async function POST(req) {
         // Identify card using Ximilar API
         const identifyResponse = await axios.post(
             "https://api.ximilar.com/collectibles/v2/sport_id",
-            { records: [{ _base64: imageUrl }], pricing: false },
+            { records: [{ _url: imageUrl }], pricing: false },
             { headers: { "Content-Type": "application/json", Authorization: `Token ${XIMILAR_API_KEY}` } }
         );
-
+        console.log(JSON.stringify(identifyResponse.data), "JKSDAHDKJAS")
         const cardData = identifyResponse.data.records[0];
         if (!cardData) throw new Error("Card identification failed.");
+
+        // Grade card using Ximilar API
+        const gradeResponse = await axios.post(
+            "https://api.ximilar.com/card-grader/v2/grade",
+            { records: [{ _url: imageUrl }] },
+            { headers: { "Content-Type": "application/json", Authorization: `Token ${XIMILAR_API_KEY}` } }
+        );
+        console.log("📊 Card Grading Result:", JSON.stringify(gradeResponse.data));
+
+// Extract grading data
+        const gradeData = gradeResponse.data.records[0]?.grades || {};
 
         // Fetch price from SportsCardsPro API
         const priceResponse = await axios.get(
@@ -45,14 +56,14 @@ export async function POST(req) {
             throw new Error("No matching products found.");
         }
 
-        const productData = priceResponse.data.products.map((product) => ({
-            id: product.id,
-            name: product["product-name"],
-            category: product["console-name"],
-        }));
+        const productData = priceResponse.data.products
 
         // Save scan history
-        const scanResult = { cardName: cardData.name, timestamp: new Date().toISOString(), prices: productData };
+        const scanResult = {
+            timestamp: new Date().toISOString(),
+            prices: productData,
+            grading: gradeData
+        };
         db.data.scans.push(scanResult);
         await db.write();
 
