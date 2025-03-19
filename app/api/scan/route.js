@@ -29,7 +29,7 @@ export async function POST(req) {
         // Identify card using Ximilar API
         const identifyResponse = await axios.post(
             "https://api.ximilar.com/collectibles/v2/sport_id",
-            { records: [{ _url: imageUrl }], pricing: false },
+            { records: [{ _base64: imageUrl }], pricing: false },
             { headers: { "Content-Type": "application/json", Authorization: `Token ${XIMILAR_API_KEY}` } }
         );
 
