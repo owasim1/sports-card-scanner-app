@@ -72,10 +72,6 @@ export default function Home() {
         <video ref={videoRef} autoPlay playsInline width="100%" height="400px" />
         <canvas ref={canvasRef} style={{ display: "none" }} width="640" height="480"></canvas>
 
-        <button onClick={captureImage}>Capture Image</button>
-        <button onClick={scanCard}>Scan Card</button>
-
-        {image && <img src={image} alt="Captured" style={{ marginTop: "20px", width: "100%" }} />}
         {scanResult && (
             <div>
               <h2>Scan Result</h2>
