@@ -12,13 +12,23 @@ export default function Home() {
   // Automatically start the camera when the page loads
   useEffect(() => {
     const startCamera = async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error("⚠️ Camera not supported in this browser.");
+        alert("Your browser does not support camera access. Please use Chrome or Safari.");
+        return;
+      }
+
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { exact: "environment" } } // Use back camera
+        });
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
       } catch (error) {
-        console.error("Error accessing the camera:", error);
+        console.error("❌ Error accessing the camera:", error);
+        alert("Error accessing the camera. Ensure you have granted camera permissions.");
       }
     };
 
