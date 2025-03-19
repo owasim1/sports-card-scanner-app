@@ -37,15 +37,15 @@ export async function POST(req) {
         if (!cardData) throw new Error("Card identification failed.");
 
         // Grade card using Ximilar API
-        const gradeResponse = await axios.post(
-            "https://api.ximilar.com/card-grader/v2/grade",
-            { records: [{ _url: imageUrl }] },
-            { headers: { "Content-Type": "application/json", Authorization: `Token ${XIMILAR_API_KEY}` } }
-        );
-        console.log("📊 Card Grading Result:", JSON.stringify(gradeResponse.data));
+        // const gradeResponse = await axios.post(
+        //     "https://api.ximilar.com/card-grader/v2/grade",
+        //     { records: [{ _url: imageUrl }] },
+        //     { headers: { "Content-Type": "application/json", Authorization: `Token ${XIMILAR_API_KEY}` } }
+        // );
+        // console.log("📊 Card Grading Result:", JSON.stringify(gradeResponse.data));
 
 // Extract grading data
-        const gradeData = gradeResponse.data.records[0]?.grades || {};
+//         const gradeData = gradeResponse.data.records[0]?.grades || {};
 
         // Fetch price from SportsCardsPro API
         const priceResponse = await axios.get(
@@ -62,7 +62,7 @@ export async function POST(req) {
         const scanResult = {
             timestamp: new Date().toISOString(),
             prices: productData,
-            grading: gradeData
+            // grading: gradeData
         };
         db.data.scans.push(scanResult);
         await db.write();
