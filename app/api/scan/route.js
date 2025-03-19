@@ -8,7 +8,8 @@ dotenv.config();
 
 const XIMILAR_API_KEY = process.env.XIMILAR_API_KEY;
 const SPORTSCARDSPRO_API_KEY = process.env.SPORTSCARDSPRO_API_KEY;
-
+console.log(XIMILAR_API_KEY)
+console.log(SPORTSCARDSPRO_API_KEY)
 const adapter = new JSONFile("history.json");
 const db = new Low(adapter, { scans: [] });
 
@@ -19,7 +20,8 @@ export async function POST(req) {
     await db.read();
     db.data ||= { scans: [] };
 
-    const { imageUrl } = await req.json();
+    // const { imageUrl } = await req.json();
+    const imageUrl = "https://i.etsystatic.com/5850192/r/il/37282f/1285253180/il_fullxfull.1285253180_10gi.jpg"
     if (!imageUrl) return NextResponse.json({ error: "Image URL required" }, { status: 400 });
 
     console.log("📸 Scanning:", imageUrl);
@@ -37,7 +39,7 @@ export async function POST(req) {
 
         // Fetch price from SportsCardsPro API
         const priceResponse = await axios.get(
-            `https://www.sportscardspro.com/api/products?t=${SPORTSCARDSPRO_API_KEY}&q=${encodeURIComponent(cardData.name)}`
+            `https://www.sportscardspro.com/api/products?t=${SPORTSCARDSPRO_API_KEY}&q=${encodeURIComponent(cardData)}`
         );
 
         if (priceResponse.data.status !== "success" || !priceResponse.data.products?.length) {

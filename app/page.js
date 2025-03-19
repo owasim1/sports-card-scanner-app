@@ -47,7 +47,7 @@ export default function Home() {
   };
 
   const scanCard = async () => {
-    if (!image) return alert("Capture an image first!");
+    // if (!image) return alert("Capture an image first!");
 
     try {
       const response = await axios.post("/api/scan", { imageUrl: image });
