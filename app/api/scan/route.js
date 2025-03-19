@@ -19,8 +19,8 @@ export async function POST(req) {
     await db.read();
     db.data ||= { scans: [] };
 
-    // const { imageUrl } = await req.json();
-    const imageUrl = "https://i.imgur.com/TBfr5vf.jpeg"
+    const { imageUrl } = await req.json();
+    // const imageUrl = "https://i.imgur.com/TBfr5vf.jpeg"
     if (!imageUrl) return NextResponse.json({ error: "Image URL required" }, { status: 400 });
 
     console.log("📸 Scanning:", imageUrl);
@@ -29,8 +29,8 @@ export async function POST(req) {
         // Identify card using Ximilar API
         const ximilarResponse = await axios.post(
             "https://api.ximilar.com/collectibles/v2/sport_id",
-            { records: [{ _url: imageUrl }], pricing: true },
-            // { records: [{ _base64: imageUrl }], pricing: true },
+            // { records: [{ _url: imageUrl }], pricing: true },
+            { records: [{ _base64: imageUrl }], pricing: true },
             { headers: { "Content-Type": "application/json", Authorization: `Token ${XIMILAR_API_KEY}` } }
         );
         console.log(JSON.stringify(ximilarResponse.data), "JKSDAHDKJAS")
