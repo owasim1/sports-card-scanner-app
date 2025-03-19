@@ -19,8 +19,8 @@ export async function POST(req) {
     await db.read();
     db.data ||= { scans: [] };
 
-    // const { imageUrl } = await req.json();
-    const imageUrl = "https://i.etsystatic.com/5850192/r/il/37282f/1285253180/il_fullxfull.1285253180_10gi.jpg"
+    const { imageUrl } = await req.json();
+    // const imageUrl = "https://i.etsystatic.com/5850192/r/il/37282f/1285253180/il_fullxfull.1285253180_10gi.jpg"
     if (!imageUrl) return NextResponse.json({ error: "Image URL required" }, { status: 400 });
 
     console.log("📸 Scanning:", imageUrl);
