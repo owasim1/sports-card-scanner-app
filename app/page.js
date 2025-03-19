@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 export default function Home() {
-  const [scanResult, setScanResult] = useState(null);
+  const [scanHistory, setScanHistory] = useState([]); // Store all scans
+  const [currentScanIndex, setCurrentScanIndex] = useState(0); // Track which scan is displayed
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const isScanning = useRef(false); // Prevent multiple requests at the same time
@@ -48,7 +49,9 @@ export default function Home() {
         isScanning.current = true; // Lock the scanning process
 
         const response = await axios.post("/api/scan", { imageUrl: imageData });
-        setScanResult(response.data);
+
+        // Save all scans in history
+        setScanHistory((prev) => [...prev, response.data]);
       } catch (error) {
         console.error("Error scanning card:", error);
       } finally {
@@ -59,12 +62,23 @@ export default function Home() {
 
   // Automatically scan every 3 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
+    const scanInterval = setInterval(() => {
       captureAndScan();
-    }, 3000); // Adjust scan frequency (e.g., 3000ms = 3 seconds)
+    }, 3000); // Adjust scan frequency
 
-    return () => clearInterval(interval);
+    return () => clearInterval(scanInterval);
   }, []);
+
+  // Automatically cycle through scan history every 5 seconds
+  useEffect(() => {
+    if (scanHistory.length > 1) {
+      const cycleInterval = setInterval(() => {
+        setCurrentScanIndex((prevIndex) => (prevIndex + 1) % scanHistory.length);
+      }, 5000); // Change every 5 seconds
+
+      return () => clearInterval(cycleInterval);
+    }
+  }, [scanHistory]);
 
   return (
       <div className="container">
@@ -72,14 +86,11 @@ export default function Home() {
         <video ref={videoRef} autoPlay playsInline width="100%" height="400px" />
         <canvas ref={canvasRef} style={{ display: "none" }} width="640" height="480"></canvas>
 
-        {scanResult && (
+        {scanHistory.length > 0 && (
             <div>
               <h2>Scan Result</h2>
-              <p><strong>Card Name:</strong> {scanResult.prices[0]["product-name"]}</p>
-              <p><h3>Pricing:</h3>
-                {scanResult.prices[0]["loose-price"]}</p>
-              {/*<p><h3>Grade:</h3>*/}
-              {/*  {scanResult.grading["final"]}</p>*/}
+              <p><strong>Card Name:</strong> {scanHistory[currentScanIndex]?.prices[0]["product-name"]}</p>
+              <p><h3>Pricing:</h3> {scanHistory[currentScanIndex]?.prices[0]["loose-price"]}</p>
             </div>
         )}
       </div>
