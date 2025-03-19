@@ -9,9 +9,9 @@ const XIMILAR_API_KEY = process.env.XIMILAR_API_KEY;
 const SPORTSCARDSPRO_API_KEY = process.env.SPORTSCARDSPRO_API_KEY;
 console.log(XIMILAR_API_KEY)
 console.log(SPORTSCARDSPRO_API_KEY)
-
 const adapter = new Memory();
-const db = new Low(adapter);
+const db = new Low(adapter, { scans: [] });
+
 await db.read();
 db.data ||= { scans: [] };
 
