@@ -88,11 +88,11 @@ export default function Home() {
   // ✅ Auto-detection loop with cleanup to prevent memory leaks
   useEffect(() => {
     const interval = setInterval(() => {
-      detectCard();
-    }, 2000); // Runs every 2 seconds
+      detectCardShape();
+    }, 1000); // Runs every 1 second
 
-    return () => clearInterval(interval); // ✅ Cleanup on unmount
-  }, []);
+    return () => clearInterval(interval); // ✅ Cleanup to prevent multiple intervals
+  }, []); // Runs only once when the component mounts
 
   const detectCard = async () => {
     if (isProcessing.current) return; // Prevent overlapping detections
