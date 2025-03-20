@@ -10,6 +10,7 @@ export default function Home() {
   const detectionCanvasRef = useRef(null);
   const [loadingScans, setLoadingScans] = useState([]); // Track loading state for each scan
   const [isCardDetected, setIsCardDetected] = useState(false);
+  const captureCanvasRef = useRef(null);
 
   const detectCardShape = () => {
     if (isProcessing.current) return; // Prevent overlapping detections
@@ -93,7 +94,7 @@ export default function Home() {
 
   const scanCard = async () => {
     const video = videoRef.current;
-    const canvas = detectionCanvasRef.current;
+    const canvas = captureCanvasRef.current;
     alert(`${canvas + video}`);
 
     if (video && canvas) {
@@ -152,6 +153,12 @@ export default function Home() {
       />{" "}
       <canvas
         ref={detectionCanvasRef}
+        style={{ display: "none" }}
+        width="640"
+        height="480"
+      ></canvas>
+      <canvas
+        ref={captureCanvasRef}
         style={{ display: "none" }}
         width="640"
         height="480"
