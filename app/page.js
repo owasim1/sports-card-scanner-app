@@ -6,7 +6,6 @@ import axios from "axios";
 export default function Home() {
   const [scanHistory, setScanHistory] = useState([]); // Store all scans
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   const isProcessing = useRef(false);
   const detectionCanvasRef = useRef(null);
   const [loadingScans, setLoadingScans] = useState([]); // Track loading state for each scan
