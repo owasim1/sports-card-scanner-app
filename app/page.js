@@ -35,12 +35,17 @@ export default function Home() {
 
     startCamera();
   }, []);
-// **Auto-detection loop**
-  const startAutoDetection = () => {
-    setInterval(() => {
+
+// ✅ Auto-detection loop with cleanup to prevent memory leaks
+  useEffect(() => {
+    const interval = setInterval(() => {
       detectCard();
     }, 2000); // Runs every 2 seconds
-  };
+
+    return () => clearInterval(interval); // ✅ Cleanup on unmount
+  }, []);
+
+
 
   const detectCard = async () => {
     if (isProcessing.current) return; // Prevent overlapping detections
