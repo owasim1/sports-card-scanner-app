@@ -22,9 +22,9 @@ export default function Home() {
     if (video && canvas) {
       const ctx = canvas.getContext("2d");
 
-      // ✅ Use a smaller resolution to speed up detection
-      ctx.drawImage(video, 0, 0, 320, 240);
-      const imageData = ctx.getImageData(0, 0, 320, 240);
+      // ✅ Use a slightly larger resolution for better detection
+      ctx.drawImage(video, 0, 0, 400, 300);
+      const imageData = ctx.getImageData(0, 0, 400, 300);
       const pixels = imageData.data;
 
       // Convert to grayscale
@@ -37,24 +37,35 @@ export default function Home() {
 
       ctx.putImageData(imageData, 0, 0);
 
-      // **🔍 Detect edges using white pixels threshold**
+      // **🔍 Detect edges using improved white pixels threshold**
       let edgePixels = [];
-      for (let y = 0; y < 240; y += 5) {
-        for (let x = 0; x < 320; x += 5) {
-          const index = (y * 320 + x) * 4;
-          if (pixels[index] > 220) edgePixels.push({ x, y });
+      for (let y = 0; y < 300; y += 4) {
+        // Increase density for better accuracy
+        for (let x = 0; x < 400; x += 4) {
+          const index = (y * 400 + x) * 4;
+          if (pixels[index] > 200) edgePixels.push({ x, y });
         }
       }
 
-      // **🟩 Detect corners using edge clustering**
-      let topLeft = edgePixels.find((p) => p.x < 50 && p.y < 50);
-      let topRight = edgePixels.find((p) => p.x > 270 && p.y < 50);
-      let bottomLeft = edgePixels.find((p) => p.x < 50 && p.y > 190);
-      let bottomRight = edgePixels.find((p) => p.x > 270 && p.y > 190);
+      // **🟩 Improved corner detection**
+      let topLeft = edgePixels.find((p) => p.x < 60 && p.y < 60);
+      let topRight = edgePixels.find((p) => p.x > 340 && p.y < 60);
+      let bottomLeft = edgePixels.find((p) => p.x < 60 && p.y > 240);
+      let bottomRight = edgePixels.find((p) => p.x > 340 && p.y > 240);
 
-      // **✅ Confirm if a full rectangle is detected**
-      const isRectangleDetected =
-        topLeft && topRight && bottomLeft && bottomRight;
+      // **✅ Looser rectangle check**
+      const detectedCorners = [
+        topLeft,
+        topRight,
+        bottomLeft,
+        bottomRight,
+      ].filter(Boolean).length;
+
+      // **Adjust sensitivity:**
+      // - `4` = Strict rectangle (hard to trigger)
+      // - `3` = Medium strictness (balanced)
+      // - `2` = More forgiving (easier to trigger)
+      const isRectangleDetected = detectedCorners >= 3; // Set to 3 for balance
 
       setIsCardDetected(isRectangleDetected);
     }
