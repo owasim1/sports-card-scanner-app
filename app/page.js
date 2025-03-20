@@ -53,7 +53,7 @@ export default function Home() {
       let bottomLeft = edgePixels.find((p) => p.x < 60 && p.y > 240);
       let bottomRight = edgePixels.find((p) => p.x > 340 && p.y > 240);
 
-      // **✅ Looser rectangle check**
+      // **✅ Check if we have a full rectangle**
       const detectedCorners = [
         topLeft,
         topRight,
@@ -61,11 +61,16 @@ export default function Home() {
         bottomRight,
       ].filter(Boolean).length;
 
-      // **Adjust sensitivity:**
-      // - `4` = Strict rectangle (hard to trigger)
-      // - `3` = Medium strictness (balanced)
-      // - `2` = More forgiving (easier to trigger)
-      const isRectangleDetected = detectedCorners >= 3; // Set to 3 for balance
+      // **🔢 Ensure the aspect ratio matches ~2.5:3.5**
+      let detectedWidth = topRight && topLeft ? topRight.x - topLeft.x : 0;
+      let detectedHeight = bottomLeft && topLeft ? bottomLeft.y - topLeft.y : 0;
+
+      let aspectRatio =
+        detectedWidth && detectedHeight ? detectedWidth / detectedHeight : 0;
+
+      // **✅ Strict check: 4 corners + aspect ratio between ~0.7 - 0.74 (2.5:3.5)**
+      const isCorrectAspectRatio = aspectRatio >= 0.7 && aspectRatio <= 0.74;
+      const isRectangleDetected = detectedCorners === 4 && isCorrectAspectRatio;
 
       setIsCardDetected(isRectangleDetected);
     }
