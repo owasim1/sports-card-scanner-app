@@ -9,13 +9,9 @@ export default function Home() {
   const canvasRef = useRef(null);
   const isProcessing = useRef(false);
   const detectionCanvasRef = useRef(null);
+  const [loadingScans, setLoadingScans] = useState([]); // Track loading state for each scan
   const [isCardDetected, setIsCardDetected] = useState(false);
-  // **Auto-detection loop**
-  const startAutoDetection = () => {
-    setInterval(() => {
-      detectCardShape();
-    }, 1000); // Runs every 1 second
-  };
+
   const detectCardShape = () => {
     if (isProcessing.current) return; // Prevent overlapping detections
     isProcessing.current = true;
@@ -135,6 +131,7 @@ export default function Home() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
+    console.log(video, canvas, "canvas and video");
     if (video && canvas) {
       const ctx = canvas.getContext("2d");
 
@@ -145,17 +142,28 @@ export default function Home() {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = canvas.toDataURL("image/jpeg");
 
+      // ✅ Add a placeholder with loading state
+      const scanId = Date.now();
+      setScanHistory((prevHistory) => [
+        ...prevHistory,
+        { id: scanId, loading: true },
+      ]);
+      setLoadingScans((prevLoading) => [...prevLoading, scanId]);
+
       try {
         const response = await axios.post("/api/scan", { imageUrl: imageData });
 
-        // ✅ Check if the response includes a card-like object
-        const isDetected = response.data.ximilarData._objects?.some((obj) =>
-          obj.name.toLowerCase().includes("card"),
+        // ✅ Replace placeholder with actual scan data
+        setScanHistory((prevHistory) =>
+          prevHistory.map((scan) =>
+            scan.id === scanId
+              ? { ...response.data, id: scanId, loading: false }
+              : scan,
+          ),
         );
-        setIsCardDetected(isDetected); // Update state for border color
-
-        // ✅ Append new scan to history instead of replacing
-        setScanHistory((prevHistory) => [...prevHistory, response.data]);
+        setLoadingScans((prevLoading) =>
+          prevLoading.filter((id) => id !== scanId),
+        ); // ✅ Remove loading state
       } catch (error) {
         console.error("Error scanning card:", error);
       }
@@ -187,41 +195,44 @@ export default function Home() {
       {/* ✅ Scan button directly captures and sends the image */}
       <button onClick={scanCard}>Scan Card</button>
       {/* ✅ Show all scanned cards */}
-      {scanHistory.length > 0 && (
-        <div>
-          <h2>Scan History</h2>
+      {scanHistory.map((scan, index) => (
+        <div
+          key={index}
+          style={{
+            border: "1px solid #ccc",
+            padding: "10px",
+            marginTop: "10px",
+          }}
+        >
+          <h3>Scan #{index + 1}</h3>
 
-          {scanHistory.map((scan, index) => (
-            <div
-              key={index}
-              style={{
-                border: "1px solid #ccc",
-                padding: "10px",
-                marginTop: "10px",
-              }}
-            >
-              <h3>Scan #{index + 1}</h3>
+          {scan.loading ? (
+            <p style={{ color: "blue" }}>🔄 Scanning... Please wait</p>
+          ) : (
+            <>
               <p>
                 <strong>Card Name:</strong>{" "}
-                {scan.ximilarData._objects[0]._identification?.best_match
+                {scan.ximilarData?._objects[0]._identification?.best_match
                   ?.full_name
                   ? scan.ximilarData._objects[0]._identification?.best_match
                       ?.full_name
-                  : scan.productData[0]["console-name"]}
+                  : (scan.productData?.[0]?.["console-name"] ?? "Unknown")}
               </p>
               <p>
                 <strong>Pricing:</strong> $
-                {scan.ximilarData._objects[0]._identification?.best_match
+                {scan.ximilarData?._objects[0]._identification?.best_match
                   ?.pricing
                   ? scan.ximilarData._objects[0]["_identification"][
                       "best_match"
-                    ]?.pricing?.list[0]?.price
-                  : (scan.productData[0]["loose-price"] / 100).toFixed(2)}
+                    ]?.pricing?.list?.[0]?.price
+                  : ((scan.productData?.[0]?.["loose-price"] / 100)?.toFixed(
+                      2,
+                    ) ?? "N/A")}
               </p>
-            </div>
-          ))}
+            </>
+          )}
         </div>
-      )}
+      ))}
     </div>
   );
 }
