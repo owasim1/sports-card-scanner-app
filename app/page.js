@@ -25,9 +25,11 @@ export default function Home() {
 
     if (video && canvas) {
       const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      // ✅ Use a smaller resolution to speed up detection
+      ctx.drawImage(video, 0, 0, 320, 240);
+
+      const imageData = ctx.getImageData(0, 0, 320, 240); // Process fewer pixels
       const pixels = imageData.data;
 
       // Convert to grayscale
@@ -47,7 +49,7 @@ export default function Home() {
       }
 
       // If enough edges detected, assume a card-like shape
-      const isRectangleDetected = edgeCount > 30000; // Adjust this threshold for sensitivity
+      const isRectangleDetected = edgeCount > 10000; // Lower threshold for smaller canvas
 
       setIsCardDetected(isRectangleDetected);
     }
@@ -89,7 +91,7 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       detectCardShape();
-    }, 1000); // Runs every 1 second
+    }, 500); // Runs every 1 second
 
     return () => clearInterval(interval); // ✅ Cleanup to prevent multiple intervals
   }, []); // Runs only once when the component mounts
