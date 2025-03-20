@@ -24,8 +24,7 @@ export default function Home() {
 
       // ✅ Use a smaller resolution to speed up detection
       ctx.drawImage(video, 0, 0, 320, 240);
-
-      const imageData = ctx.getImageData(0, 0, 320, 240); // Process fewer pixels
+      const imageData = ctx.getImageData(0, 0, 320, 240);
       const pixels = imageData.data;
 
       // Convert to grayscale
@@ -38,14 +37,24 @@ export default function Home() {
 
       ctx.putImageData(imageData, 0, 0);
 
-      // Count white pixels (loose edge detection)
-      let edgeCount = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i] > 200) edgeCount++; // Check if pixel is close to white
+      // **🔍 Detect edges using white pixels threshold**
+      let edgePixels = [];
+      for (let y = 0; y < 240; y += 5) {
+        for (let x = 0; x < 320; x += 5) {
+          const index = (y * 320 + x) * 4;
+          if (pixels[index] > 220) edgePixels.push({ x, y });
+        }
       }
 
-      // If enough edges detected, assume a card-like shape
-      const isRectangleDetected = edgeCount > 10000; // Lower threshold for smaller canvas
+      // **🟩 Detect corners using edge clustering**
+      let topLeft = edgePixels.find((p) => p.x < 50 && p.y < 50);
+      let topRight = edgePixels.find((p) => p.x > 270 && p.y < 50);
+      let bottomLeft = edgePixels.find((p) => p.x < 50 && p.y > 190);
+      let bottomRight = edgePixels.find((p) => p.x > 270 && p.y > 190);
+
+      // **✅ Confirm if a full rectangle is detected**
+      const isRectangleDetected =
+        topLeft && topRight && bottomLeft && bottomRight;
 
       setIsCardDetected(isRectangleDetected);
     }
