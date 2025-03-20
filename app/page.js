@@ -7,6 +7,7 @@ export default function Home() {
   const [scanHistory, setScanHistory] = useState([]); // Store all scans
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const isProcessing = useRef(false);
   const [isCardDetected, setIsCardDetected] = useState(false);
 
   // Automatically start the camera when the page loads
