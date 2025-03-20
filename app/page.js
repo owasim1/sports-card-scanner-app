@@ -95,15 +95,16 @@ export default function Home() {
   const scanCard = async () => {
     const video = videoRef.current;
     const canvas = captureCanvasRef.current;
-    alert(`${canvas + video}`);
+    if (!video || !canvas) {
+      alert("Error: Camera or canvas not available!");
+      return;
+    }
 
-    if (video && canvas) {
-      const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
 
-      // ✅ Clear previous frame before capturing new one
+    // ✅ Use requestAnimationFrame to avoid freezing
+    requestAnimationFrame(async () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // ✅ Capture new frame from live video feed
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = canvas.toDataURL("image/jpeg");
 
@@ -116,23 +117,28 @@ export default function Home() {
       setLoadingScans((prevLoading) => [...prevLoading, scanId]);
 
       try {
-        const response = await axios.post("/api/scan", { imageUrl: imageData });
+        // ✅ Delay execution slightly to allow UI to update
+        setTimeout(async () => {
+          const response = await axios.post("/api/scan", {
+            imageUrl: imageData,
+          });
 
-        // ✅ Replace placeholder with actual scan data
-        setScanHistory((prevHistory) =>
-          prevHistory.map((scan) =>
-            scan.id === scanId
-              ? { ...response.data, id: scanId, loading: false }
-              : scan,
-          ),
-        );
-        setLoadingScans((prevLoading) =>
-          prevLoading.filter((id) => id !== scanId),
-        ); // ✅ Remove loading state
+          // ✅ Replace placeholder with actual scan data
+          setScanHistory((prevHistory) =>
+            prevHistory.map((scan) =>
+              scan.id === scanId
+                ? { ...response.data, id: scanId, loading: false }
+                : scan,
+            ),
+          );
+          setLoadingScans((prevLoading) =>
+            prevLoading.filter((id) => id !== scanId),
+          ); // ✅ Remove loading state
+        }, 100); // ✅ Small delay to prevent UI freeze
       } catch (error) {
         console.error("Error scanning card:", error);
       }
-    }
+    });
   };
 
   console.log(JSON.stringify(scanHistory));
