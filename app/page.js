@@ -126,12 +126,16 @@ export default function Home() {
       }
     }
   };
+  const [debugLogs, setDebugLogs] = useState([]);
 
+  const logDebug = (message, data) => {
+    setDebugLogs((prev) => [...prev, `${message}: ${JSON.stringify(data)}`]);
+  };
   const scanCard = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-
-    console.log(video, canvas, "canvas and video");
+    logDebug("🎥 Video Element", video);
+    logDebug("🖼️ Canvas Element", canvas);
     if (video && canvas) {
       const ctx = canvas.getContext("2d");
 
