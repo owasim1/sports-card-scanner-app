@@ -92,44 +92,9 @@ export default function Home() {
     return () => clearInterval(interval); // ✅ Cleanup to prevent multiple intervals
   }, []); // Runs only once when the component mounts
 
-  const detectCard = async () => {
-    if (isProcessing.current) return; // Prevent overlapping detections
-    isProcessing.current = true;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-
-    if (video && canvas) {
-      const ctx = canvas.getContext("2d");
-
-      // Clear previous frame
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Capture current frame
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL("image/jpeg");
-
-      try {
-        const response = await axios.post("/api/detect", {
-          imageUrl: imageData,
-        });
-
-        // ✅ Check if the response includes a card-like object
-        const isDetected = response.data.ximilarData._objects?.some((obj) =>
-          obj.name.toLowerCase().includes("card"),
-        );
-        setIsCardDetected(isDetected); // Update state for border color
-      } catch (error) {
-        console.error("Error detecting card:", error);
-      } finally {
-        isProcessing.current = false; // Unlock detection
-      }
-    }
-  };
-
   const scanCard = async () => {
     const video = videoRef.current;
-    const canvas = canvasRef.current;
+    const canvas = detectionCanvasRef.current;
     alert(`${canvas + video}`);
 
     if (video && canvas) {
