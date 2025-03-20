@@ -51,6 +51,10 @@ export default function Home() {
       try {
         const response = await axios.post("/api/scan", { imageUrl: imageData });
 
+        // ✅ Check if the response includes a card-like object
+        const isDetected = response.data.ximilarData._objects?.some(obj => obj.name.toLowerCase().includes("card"));
+        setIsCardDetected(isDetected); // Update state for border color
+
         // ✅ Append new scan to history instead of replacing
         setScanHistory((prevHistory) => [...prevHistory, response.data]);
       } catch (error) {
@@ -64,8 +68,17 @@ export default function Home() {
   return (
       <div className="container">
         <h1>Sports Card Scanner</h1>
-        <video ref={videoRef} autoPlay playsInline width="100%" height="400px" />
-        <canvas ref={canvasRef} style={{ display: "none" }} width="640" height="480"></canvas>
+        <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            width="100%"
+            height="400px"
+            style={{
+              border: `5px solid ${isCardDetected ? "green" : "red"}`, // ✅ Change border color
+              borderRadius: "10px",
+            }}
+        />        <canvas ref={canvasRef} style={{ display: "none" }} width="640" height="480"></canvas>
 
         {/* ✅ Scan button directly captures and sends the image */}
         <button onClick={scanCard}>Scan Card</button>
