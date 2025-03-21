@@ -53,11 +53,16 @@ export default function Home() {
     }
 
     // Detect corners based on quadrants
-    const topLeft = edgePixels.find((p) => p.x < 60 && p.y < 60);
-    const topRight = edgePixels.find((p) => p.x > width - 60 && p.y < 60);
-    const bottomLeft = edgePixels.find((p) => p.x < 60 && p.y > height - 60);
+    const tolerance = 80;
+    const topLeft = edgePixels.find((p) => p.x < tolerance && p.y < tolerance);
+    const topRight = edgePixels.find(
+      (p) => p.x > width - tolerance && p.y < tolerance,
+    );
+    const bottomLeft = edgePixels.find(
+      (p) => p.x < tolerance && p.y > height - tolerance,
+    );
     const bottomRight = edgePixels.find(
-      (p) => p.x > width - 60 && p.y > height - 60,
+      (p) => p.x > width - tolerance && p.y > height - tolerance,
     );
 
     if (topLeft)
@@ -185,7 +190,7 @@ export default function Home() {
         ref={detectionCanvasRef}
         width="320"
         height="240"
-        style={{ border: "1px solid gray", marginTop: "10px" }}
+        style={{ display: "none" }}
       ></canvas>
       <canvas
         ref={captureCanvasRef}
