@@ -14,7 +14,7 @@ export default function Home() {
   const autoScanTriggered = useRef(false);
   const [modalImage, setModalImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [cardDetectedStart, setCardDetectedStart] = useState(null);
+  const cardDetectedStart = useRef(null);
 
   const detectCardShape = () => {
     if (isProcessing.current) return;
@@ -73,22 +73,22 @@ export default function Home() {
     setIsCardDetected(isRectangleDetected);
 
     if (isRectangleDetected) {
-      if (!cardDetectedStart) {
-        setCardDetectedStart(Date.now());
+      if (!cardDetectedStart.current) {
+        cardDetectedStart.current = Date.now();
       } else {
-        const elapsed = Date.now() - cardDetectedStart;
+        const elapsed = Date.now() - cardDetectedStart.current;
         if (elapsed >= 2000 && !autoScanTriggered.current) {
           autoScanTriggered.current = true;
           scanCard().finally(() => {
             setTimeout(() => {
               autoScanTriggered.current = false;
-              setCardDetectedStart(null); // reset timer after scan
+              cardDetectedStart.current = null; // reset after scan
             }, 3000);
           });
         }
       }
     } else {
-      setCardDetectedStart(null); // reset timer if detection lost
+      cardDetectedStart.current = null; // reset if detection lost
     }
 
     isProcessing.current = false;
