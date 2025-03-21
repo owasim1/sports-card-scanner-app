@@ -148,15 +148,11 @@ export default function Home() {
 
     requestAnimationFrame(async () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Step 1: Draw full video frame to canvas
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Step 2: Define crop box in canvas scale (normalized from the overlay)
       const overlayBoxWidth = 180;
       const overlayBoxHeight = 252;
 
-      // Convert overlay box size (in screen units) to canvas scale
       const videoDisplayWidth = video.clientWidth;
       const videoDisplayHeight = video.clientHeight;
 
@@ -166,15 +162,13 @@ export default function Home() {
       const cropWidth = overlayBoxWidth * scaleX;
       const cropHeight = overlayBoxHeight * scaleY;
       const cropX = (canvas.width - cropWidth) / 2;
-      const cropY = 120 * scaleY; // match `top: 120px` of overlay
+      const cropY = (canvas.height - cropHeight) / 2;
 
-      // Step 3: Create offscreen canvas for cropping
       const cropCanvas = document.createElement("canvas");
       cropCanvas.width = cropWidth;
       cropCanvas.height = cropHeight;
       const cropCtx = cropCanvas.getContext("2d");
 
-      // Step 4: Draw only the cropped region from main canvas
       cropCtx.drawImage(
         canvas,
         cropX,
@@ -191,7 +185,6 @@ export default function Home() {
       setPreviewImage(croppedImageData);
       setTimeout(() => setPreviewImage(null), 1500);
 
-      // Step 5: Store and scan
       const scanId = Date.now();
       setScanHistory((prev) => [
         ...prev,
@@ -221,6 +214,20 @@ export default function Home() {
         }, 100);
       } catch (error) {
         console.error("Error scanning card:", error);
+        // ❌ Update scanHistory with error state
+        setScanHistory((prev) =>
+          prev.map((scan) =>
+            scan.id === scanId
+              ? {
+                  id: scanId,
+                  loading: false,
+                  error: true,
+                  image: scan.image,
+                }
+              : scan,
+          ),
+        );
+        setLoadingScans((prev) => prev.filter((id) => id !== scanId));
       }
     });
   };
