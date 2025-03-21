@@ -23,11 +23,13 @@ export default function Home() {
       const ctx = canvas.getContext("2d");
 
       // ✅ Use a slightly larger resolution for better detection
-      ctx.drawImage(video, 0, 0, 400, 300);
-      const imageData = ctx.getImageData(0, 0, 400, 300);
+      const WIDTH = 400;
+      const HEIGHT = 300;
+      ctx.drawImage(video, 0, 0, WIDTH, HEIGHT);
+      const imageData = ctx.getImageData(0, 0, WIDTH, HEIGHT);
       const pixels = imageData.data;
 
-      // Convert to grayscale
+      // Convert to grayscale (simplifies edge detection)
       for (let i = 0; i < pixels.length; i += 4) {
         let avg = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
         pixels[i] = avg;
@@ -37,31 +39,32 @@ export default function Home() {
 
       ctx.putImageData(imageData, 0, 0);
 
-      // **🔍 Detect edges using improved white pixels threshold**
+      // **🔍 Detect edges using white pixels threshold**
       let edgePixels = [];
-      for (let y = 0; y < 300; y += 4) {
+      for (let y = 0; y < HEIGHT; y += 5) {
         // Increase density for better accuracy
-        for (let x = 0; x < 400; x += 4) {
-          const index = (y * 400 + x) * 4;
-          if (pixels[index] > 200) edgePixels.push({ x, y });
+        for (let x = 0; x < WIDTH; x += 5) {
+          const index = (y * WIDTH + x) * 4;
+          if (pixels[index] > 220) edgePixels.push({ x, y });
         }
       }
 
-      // **🟩 Improved corner detection with wider range**
-      let topLeft = edgePixels.find((p) => p.x < 80 && p.y < 80);
-      let topRight = edgePixels.find((p) => p.x > 320 && p.y < 80);
-      let bottomLeft = edgePixels.find((p) => p.x < 80 && p.y > 220);
-      let bottomRight = edgePixels.find((p) => p.x > 320 && p.y > 220);
+      // **🟩 Improved corner detection with flexible margins**
+      let marginX = WIDTH * 0.2; // 20% of width (allows flexibility)
+      let marginY = HEIGHT * 0.2; // 20% of height
 
-      // **✅ Check if we have at least 3 corners to avoid missing detections**
-      const detectedCorners = [
-        topLeft,
-        topRight,
-        bottomLeft,
-        bottomRight,
-      ].filter(Boolean).length;
+      let topLeft = edgePixels.find((p) => p.x < marginX && p.y < marginY);
+      let topRight = edgePixels.find(
+        (p) => p.x > WIDTH - marginX && p.y < marginY,
+      );
+      let bottomLeft = edgePixels.find(
+        (p) => p.x < marginX && p.y > HEIGHT - marginY,
+      );
+      let bottomRight = edgePixels.find(
+        (p) => p.x > WIDTH - marginX && p.y > HEIGHT - marginY,
+      );
 
-      // **🔢 Ensure the aspect ratio is close to 2.5:3.5 but allow small tolerance**
+      // **🔢 Detect aspect ratio (allow flexibility for perspective)**
       let detectedWidth =
         topRight && topLeft ? Math.abs(topRight.x - topLeft.x) : 0;
       let detectedHeight =
@@ -70,8 +73,16 @@ export default function Home() {
       let aspectRatio =
         detectedWidth && detectedHeight ? detectedWidth / detectedHeight : 0;
 
-      // **✅ Allow aspect ratio between ~0.65 - 0.75 to compensate for perspective distortion**
-      const isCorrectAspectRatio = aspectRatio >= 0.65 && aspectRatio <= 0.75;
+      // **✅ Aspect Ratio Check**
+      const isCorrectAspectRatio = aspectRatio >= 0.65 && aspectRatio <= 0.75; // 2.5x3.5 ratio with slight tolerance
+      const detectedCorners = [
+        topLeft,
+        topRight,
+        bottomLeft,
+        bottomRight,
+      ].filter(Boolean).length;
+
+      // **✅ Confirm detection (at least 3 corners & correct ratio)**
       const isRectangleDetected = detectedCorners >= 3 && isCorrectAspectRatio;
 
       setIsCardDetected(isRectangleDetected);
