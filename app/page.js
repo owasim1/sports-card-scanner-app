@@ -150,7 +150,7 @@ export default function Home() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const overlayBoxWidth = 180;
+      const overlayBoxWidth = 200;
       const overlayBoxHeight = 252;
 
       const videoDisplayWidth = video.clientWidth;
