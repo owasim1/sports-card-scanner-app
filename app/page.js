@@ -150,8 +150,8 @@ export default function Home() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const overlayBoxWidth = 250;
-      const overlayBoxHeight = 252;
+      const overlayBoxWidth = 350;
+      const overlayBoxHeight = 450;
 
       const videoDisplayWidth = video.clientWidth;
       const videoDisplayHeight = video.clientHeight;
@@ -274,17 +274,18 @@ export default function Home() {
       <div
         style={{
           position: "absolute",
-          top: "120px", // adjust as needed
+          top: "80px", // lower it a little to stay centered
           left: "50%",
           transform: "translateX(-50%)",
-          width: "180px",
-          height: "252px",
+          width: "280px",
+          height: "392px",
           border: "2px dashed #00ff00",
           borderRadius: "8px",
           zIndex: 2,
           pointerEvents: "none",
         }}
       ></div>
+
       <canvas
         ref={detectionCanvasRef}
         width="320"
