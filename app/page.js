@@ -311,7 +311,9 @@ export default function Home() {
         >
           <h3>Scan #{scanHistory.length - index}</h3>
 
-          {scan.loading ? (
+          {scan.error ? (
+            <p style={{ color: "red" }}>❌ Scan failed</p>
+          ) : scan.loading ? (
             <p style={{ color: "blue" }}>🔄 Scanning... Please wait</p>
           ) : (
             <>
@@ -333,16 +335,17 @@ export default function Home() {
                       2,
                     ) ?? "N/A")}
               </p>
-              <button
-                onClick={() => {
-                  setModalImage(scan.image);
-                  setIsModalOpen(true);
-                }}
-              >
-                View Image
-              </button>
             </>
           )}
+
+          <button
+            onClick={() => {
+              setModalImage(scan.image);
+              setIsModalOpen(true);
+            }}
+          >
+            View Image
+          </button>
         </div>
       ))}
       {isModalOpen && (
