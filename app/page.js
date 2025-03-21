@@ -274,11 +274,11 @@ export default function Home() {
       <div
         style={{
           position: "absolute",
-          top: "80px", // lower it a little to stay centered
+          top: "60px", // lower it a little to stay centered
           left: "50%",
           transform: "translateX(-50%)",
-          width: "280px",
-          height: "392px",
+          width: "252px",
+          height: "352px",
           border: "2px dashed #00ff00",
           borderRadius: "8px",
           zIndex: 2,
