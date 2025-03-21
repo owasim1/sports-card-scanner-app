@@ -16,6 +16,8 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const cardDetectedStart = useRef(null);
 
+  const [previewImage, setPreviewImage] = useState(null);
+
   const detectCardShape = () => {
     if (isProcessing.current) return;
     isProcessing.current = true;
@@ -178,6 +180,8 @@ export default function Home() {
       );
 
       const croppedImageData = cropCanvas.toDataURL("image/jpeg");
+      setPreviewImage(croppedImageData); // 👈 Show preview
+      setTimeout(() => setPreviewImage(null), 1500); // 👈 Auto-hide
 
       // Step 5: Store and scan
       const scanId = Date.now();
@@ -231,6 +235,29 @@ export default function Home() {
           borderRadius: "10px",
         }}
       />
+      {previewImage && (
+        <div
+          style={{
+            position: "absolute",
+            top: "20px",
+            right: "20px",
+            border: "2px solid white",
+            backgroundColor: "black",
+            padding: "4px",
+            zIndex: 5,
+          }}
+        >
+          <img
+            src={previewImage}
+            alt="Preview"
+            style={{ width: "120px", height: "auto", borderRadius: "4px" }}
+          />
+          <p style={{ color: "white", fontSize: "12px", textAlign: "center" }}>
+            Capturing...
+          </p>
+        </div>
+      )}
+
       <div
         style={{
           position: "absolute",
