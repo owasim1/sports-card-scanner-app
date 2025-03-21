@@ -53,7 +53,7 @@ export default function Home() {
     }
 
     // Detect corners based on quadrants
-    const tolerance = 80;
+    const tolerance = 90;
     const topLeft = edgePixels.find((p) => p.x < tolerance && p.y < tolerance);
     const topRight = edgePixels.find(
       (p) => p.x > width - tolerance && p.y < tolerance,
