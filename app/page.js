@@ -77,7 +77,7 @@ export default function Home() {
         cardDetectedStart.current = Date.now();
       } else {
         const elapsed = Date.now() - cardDetectedStart.current;
-        if (elapsed >= 2000 && !autoScanTriggered.current) {
+        if (elapsed >= 1000 && !autoScanTriggered.current) {
           autoScanTriggered.current = true;
           scanCard().finally(() => {
             setTimeout(() => {
