@@ -39,8 +39,8 @@ export default function Home() {
     const edgePixels = [];
 
     // Convert to grayscale + collect edge pixels
-    for (let y = 0; y < height; y += 7) {
-      for (let x = 0; x < width; x += 7) {
+    for (let y = 0; y < height; y += 10) {
+      for (let x = 0; x < width; x += 10) {
         const index = (y * width + x) * 4;
         const avg = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
 
