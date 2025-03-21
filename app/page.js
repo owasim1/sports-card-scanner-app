@@ -11,6 +11,7 @@ export default function Home() {
   const [loadingScans, setLoadingScans] = useState([]); // Track loading state for each scan
   const [isCardDetected, setIsCardDetected] = useState(false);
   const captureCanvasRef = useRef(null);
+  const autoScanTriggered = useRef(false);
 
   const detectCardShape = () => {
     if (isProcessing.current) return;
@@ -79,6 +80,18 @@ export default function Home() {
       Boolean,
     ).length;
     const isRectangleDetected = cornersDetected >= 3;
+    setIsCardDetected(isRectangleDetected);
+
+    // ✅ Automatically scan if card is detected and not already triggered
+    if (isRectangleDetected && !autoScanTriggered.current) {
+      autoScanTriggered.current = true;
+      scanCard().finally(() => {
+        // ✅ Re-allow auto-scan after short delay
+        setTimeout(() => {
+          autoScanTriggered.current = false;
+        }, 3000); // wait 3 seconds before allowing next auto scan
+      });
+    }
 
     setIsCardDetected(isRectangleDetected);
     isProcessing.current = false;
