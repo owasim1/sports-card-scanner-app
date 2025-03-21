@@ -75,8 +75,10 @@ export default function Home() {
       (ctx.fillStyle = "blue"),
         ctx.fillRect(bottomRight.x, bottomRight.y, 4, 4);
 
-    const isRectangleDetected =
-      topLeft && topRight && bottomLeft && bottomRight;
+    const cornersDetected = [topLeft, topRight, bottomLeft, bottomRight].filter(
+      Boolean,
+    ).length;
+    const isRectangleDetected = cornersDetected >= 3;
 
     setIsCardDetected(isRectangleDetected);
     isProcessing.current = false;
