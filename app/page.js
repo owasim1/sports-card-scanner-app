@@ -13,64 +13,68 @@ export default function Home() {
   const captureCanvasRef = useRef(null);
 
   const detectCardShape = () => {
-    if (isProcessing.current) return; // Prevent overlapping detections
+    if (isProcessing.current) return;
     isProcessing.current = true;
 
     const video = videoRef.current;
     const canvas = detectionCanvasRef.current;
 
-    if (video && canvas) {
-      const ctx = canvas.getContext("2d");
-
-      // Draw current frame
-      ctx.drawImage(video, 0, 0, 320, 240);
-      const imageData = ctx.getImageData(0, 0, 320, 240);
-      const pixels = imageData.data;
-
-      let edgePixels = [];
-
-      // Convert to grayscale and collect white-ish pixels (edges)
-      for (let y = 0; y < 240; y += 5) {
-        for (let x = 0; x < 320; x += 5) {
-          const index = (y * 320 + x) * 4;
-          const r = pixels[index];
-          const g = pixels[index + 1];
-          const b = pixels[index + 2];
-          const avg = (r + g + b) / 3;
-
-          if (avg > 220) {
-            edgePixels.push({ x, y });
-            ctx.fillStyle = "red";
-            ctx.fillRect(x, y, 2, 2); // 🔴 draw red edge dots
-          }
-        }
-      }
-
-      // Try to find 4 corners based on edge clusters
-      const topLeft = edgePixels.find((p) => p.x < 60 && p.y < 60);
-      const topRight = edgePixels.find((p) => p.x > 260 && p.y < 60);
-      const bottomLeft = edgePixels.find((p) => p.x < 60 && p.y > 180);
-      const bottomRight = edgePixels.find((p) => p.x > 260 && p.y > 180);
-
-      // 🔵 draw blue dots on detected corners
-      if (topLeft)
-        (ctx.fillStyle = "blue"), ctx.fillRect(topLeft.x, topLeft.y, 5, 5);
-      if (topRight)
-        (ctx.fillStyle = "blue"), ctx.fillRect(topRight.x, topRight.y, 5, 5);
-      if (bottomLeft)
-        (ctx.fillStyle = "blue"),
-          ctx.fillRect(bottomLeft.x, bottomLeft.y, 5, 5);
-      if (bottomRight)
-        (ctx.fillStyle = "blue"),
-          ctx.fillRect(bottomRight.x, bottomRight.y, 5, 5);
-
-      const isRectangleDetected =
-        topLeft && topRight && bottomLeft && bottomRight;
-
-      setIsCardDetected(isRectangleDetected);
+    if (!video || !canvas) {
+      isProcessing.current = false;
+      return;
     }
 
-    isProcessing.current = false; // Unlock detection
+    const ctx = canvas.getContext("2d");
+
+    // Set canvas size to match video
+    const width = 320;
+    const height = 240;
+    canvas.width = width;
+    canvas.height = height;
+
+    ctx.drawImage(video, 0, 0, width, height);
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const pixels = imageData.data;
+
+    const edgePixels = [];
+
+    // Convert to grayscale + collect edge pixels
+    for (let y = 0; y < height; y += 4) {
+      for (let x = 0; x < width; x += 4) {
+        const index = (y * width + x) * 4;
+        const avg = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
+
+        if (avg > 220) {
+          edgePixels.push({ x, y });
+          ctx.fillStyle = "red";
+          ctx.fillRect(x, y, 1, 1); // Visualize edges
+        }
+      }
+    }
+
+    // Detect corners based on quadrants
+    const topLeft = edgePixels.find((p) => p.x < 60 && p.y < 60);
+    const topRight = edgePixels.find((p) => p.x > width - 60 && p.y < 60);
+    const bottomLeft = edgePixels.find((p) => p.x < 60 && p.y > height - 60);
+    const bottomRight = edgePixels.find(
+      (p) => p.x > width - 60 && p.y > height - 60,
+    );
+
+    if (topLeft)
+      (ctx.fillStyle = "blue"), ctx.fillRect(topLeft.x, topLeft.y, 4, 4);
+    if (topRight)
+      (ctx.fillStyle = "blue"), ctx.fillRect(topRight.x, topRight.y, 4, 4);
+    if (bottomLeft)
+      (ctx.fillStyle = "blue"), ctx.fillRect(bottomLeft.x, bottomLeft.y, 4, 4);
+    if (bottomRight)
+      (ctx.fillStyle = "blue"),
+        ctx.fillRect(bottomRight.x, bottomRight.y, 4, 4);
+
+    const isRectangleDetected =
+      topLeft && topRight && bottomLeft && bottomRight;
+
+    setIsCardDetected(isRectangleDetected);
+    isProcessing.current = false;
   };
 
   // Automatically start the camera when the page loads
@@ -179,9 +183,9 @@ export default function Home() {
       />{" "}
       <canvas
         ref={detectionCanvasRef}
-        style={{ display: "none" }}
-        width="640"
-        height="480"
+        width="320"
+        height="240"
+        style={{ border: "1px solid gray", marginTop: "10px" }}
       ></canvas>
       <canvas
         ref={captureCanvasRef}
