@@ -230,7 +230,7 @@ export default function Home() {
       {/* ✅ Scan button directly captures and sends the image */}
       <button onClick={scanCard}>Scan Card</button>
       {/* ✅ Show all scanned cards */}
-      {scanHistory.map((scan, index) => (
+      {[...scanHistory].reverse().map((scan, index) => (
         <div
           key={index}
           style={{
