@@ -22,68 +22,50 @@ export default function Home() {
     if (video && canvas) {
       const ctx = canvas.getContext("2d");
 
-      // ✅ Use a slightly larger resolution for better detection
-      const WIDTH = 400;
-      const HEIGHT = 300;
-      ctx.drawImage(video, 0, 0, WIDTH, HEIGHT);
-      const imageData = ctx.getImageData(0, 0, WIDTH, HEIGHT);
+      // Draw current frame
+      ctx.drawImage(video, 0, 0, 320, 240);
+      const imageData = ctx.getImageData(0, 0, 320, 240);
       const pixels = imageData.data;
 
-      // Convert to grayscale (simplifies edge detection)
-      for (let i = 0; i < pixels.length; i += 4) {
-        let avg = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
-        pixels[i] = avg;
-        pixels[i + 1] = avg;
-        pixels[i + 2] = avg;
-      }
-
-      ctx.putImageData(imageData, 0, 0);
-
-      // **🔍 Detect edges using white pixels threshold**
       let edgePixels = [];
-      for (let y = 0; y < HEIGHT; y += 5) {
-        // Increase density for better accuracy
-        for (let x = 0; x < WIDTH; x += 5) {
-          const index = (y * WIDTH + x) * 4;
-          if (pixels[index] > 220) edgePixels.push({ x, y });
+
+      // Convert to grayscale and collect white-ish pixels (edges)
+      for (let y = 0; y < 240; y += 5) {
+        for (let x = 0; x < 320; x += 5) {
+          const index = (y * 320 + x) * 4;
+          const r = pixels[index];
+          const g = pixels[index + 1];
+          const b = pixels[index + 2];
+          const avg = (r + g + b) / 3;
+
+          if (avg > 220) {
+            edgePixels.push({ x, y });
+            ctx.fillStyle = "red";
+            ctx.fillRect(x, y, 2, 2); // 🔴 draw red edge dots
+          }
         }
       }
 
-      // **🟩 Improved corner detection with flexible margins**
-      let marginX = WIDTH * 0.2; // 20% of width (allows flexibility)
-      let marginY = HEIGHT * 0.2; // 20% of height
+      // Try to find 4 corners based on edge clusters
+      const topLeft = edgePixels.find((p) => p.x < 60 && p.y < 60);
+      const topRight = edgePixels.find((p) => p.x > 260 && p.y < 60);
+      const bottomLeft = edgePixels.find((p) => p.x < 60 && p.y > 180);
+      const bottomRight = edgePixels.find((p) => p.x > 260 && p.y > 180);
 
-      let topLeft = edgePixels.find((p) => p.x < marginX && p.y < marginY);
-      let topRight = edgePixels.find(
-        (p) => p.x > WIDTH - marginX && p.y < marginY,
-      );
-      let bottomLeft = edgePixels.find(
-        (p) => p.x < marginX && p.y > HEIGHT - marginY,
-      );
-      let bottomRight = edgePixels.find(
-        (p) => p.x > WIDTH - marginX && p.y > HEIGHT - marginY,
-      );
+      // 🔵 draw blue dots on detected corners
+      if (topLeft)
+        (ctx.fillStyle = "blue"), ctx.fillRect(topLeft.x, topLeft.y, 5, 5);
+      if (topRight)
+        (ctx.fillStyle = "blue"), ctx.fillRect(topRight.x, topRight.y, 5, 5);
+      if (bottomLeft)
+        (ctx.fillStyle = "blue"),
+          ctx.fillRect(bottomLeft.x, bottomLeft.y, 5, 5);
+      if (bottomRight)
+        (ctx.fillStyle = "blue"),
+          ctx.fillRect(bottomRight.x, bottomRight.y, 5, 5);
 
-      // **🔢 Detect aspect ratio (allow flexibility for perspective)**
-      let detectedWidth =
-        topRight && topLeft ? Math.abs(topRight.x - topLeft.x) : 0;
-      let detectedHeight =
-        bottomLeft && topLeft ? Math.abs(bottomLeft.y - topLeft.y) : 0;
-
-      let aspectRatio =
-        detectedWidth && detectedHeight ? detectedWidth / detectedHeight : 0;
-
-      // **✅ Aspect Ratio Check**
-      const isCorrectAspectRatio = aspectRatio >= 0.65 && aspectRatio <= 0.75; // 2.5x3.5 ratio with slight tolerance
-      const detectedCorners = [
-        topLeft,
-        topRight,
-        bottomLeft,
-        bottomRight,
-      ].filter(Boolean).length;
-
-      // **✅ Confirm detection (at least 3 corners & correct ratio)**
-      const isRectangleDetected = detectedCorners >= 3 && isCorrectAspectRatio;
+      const isRectangleDetected =
+        topLeft && topRight && bottomLeft && bottomRight;
 
       setIsCardDetected(isRectangleDetected);
     }
