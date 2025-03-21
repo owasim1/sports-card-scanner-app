@@ -187,7 +187,21 @@ export default function Home() {
           border: `5px solid ${isCardDetected ? "green" : "red"}`, // ✅ Change border color
           borderRadius: "10px",
         }}
-      />{" "}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: "120px", // adjust as needed
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "180px",
+          height: "252px",
+          border: "2px dashed #00ff00",
+          borderRadius: "8px",
+          zIndex: 2,
+          pointerEvents: "none",
+        }}
+      ></div>
       <canvas
         ref={detectionCanvasRef}
         width="320"
