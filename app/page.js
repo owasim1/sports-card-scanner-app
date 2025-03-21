@@ -136,6 +136,7 @@ export default function Home() {
   const scanCard = async () => {
     const video = videoRef.current;
     const canvas = captureCanvasRef.current;
+
     if (!video || !canvas) {
       alert("Error: Camera or canvas not available!");
       return;
@@ -143,28 +144,55 @@ export default function Home() {
 
     const ctx = canvas.getContext("2d");
 
-    // ✅ Use requestAnimationFrame to avoid freezing
     requestAnimationFrame(async () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL("image/jpeg");
 
-      // ✅ Add a placeholder with loading state
+      // Step 1: Draw full video frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Step 2: Define the crop box coordinates in canvas scale
+      const cropWidth = 180;
+      const cropHeight = 252;
+
+      const cropX = (canvas.width - cropWidth) / 2;
+      const cropY = (canvas.height - cropHeight) / 2;
+
+      // Step 3: Create an offscreen canvas for cropping
+      const cropCanvas = document.createElement("canvas");
+      cropCanvas.width = cropWidth;
+      cropCanvas.height = cropHeight;
+
+      const cropCtx = cropCanvas.getContext("2d");
+
+      // Step 4: Draw only the cropped region from main canvas
+      cropCtx.drawImage(
+        canvas,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        cropWidth,
+        cropHeight,
+      );
+
+      const croppedImageData = cropCanvas.toDataURL("image/jpeg");
+
+      // Step 5: Store and scan
       const scanId = Date.now();
       setScanHistory((prevHistory) => [
         ...prevHistory,
-        { id: scanId, loading: true, image: imageData },
+        { id: scanId, loading: true, image: croppedImageData },
       ]);
       setLoadingScans((prevLoading) => [...prevLoading, scanId]);
 
       try {
-        // ✅ Delay execution slightly to allow UI to update
         setTimeout(async () => {
           const response = await axios.post("/api/scan", {
-            imageUrl: imageData,
+            imageUrl: croppedImageData,
           });
 
-          // ✅ Replace placeholder with actual scan data
           setScanHistory((prevHistory) =>
             prevHistory.map((scan) =>
               scan.id === scanId
@@ -177,11 +205,10 @@ export default function Home() {
                 : scan,
             ),
           );
-
           setLoadingScans((prevLoading) =>
             prevLoading.filter((id) => id !== scanId),
-          ); // ✅ Remove loading state
-        }, 100); // ✅ Small delay to prevent UI freeze
+          );
+        }, 100);
       } catch (error) {
         console.error("Error scanning card:", error);
       }
