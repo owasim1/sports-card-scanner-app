@@ -31,9 +31,8 @@ export default function Home() {
     }
 
     const ctx = canvas.getContext("2d");
-    const width = 640;
-    const height = 480;
-
+    const width = 320;
+    const height = 240;
     canvas.width = width;
     canvas.height = height;
 
@@ -48,7 +47,7 @@ export default function Home() {
         const index = (y * width + x) * 4;
         const avg = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
 
-        if (avg > 180) {
+        if (avg > 190) {
           edgePixels.push({ x, y });
           ctx.fillStyle = "red";
           ctx.fillRect(x, y, 1, 1);
