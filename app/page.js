@@ -239,7 +239,7 @@ export default function Home() {
             marginTop: "10px",
           }}
         >
-          <h3>Scan #{index + 1}</h3>
+          <h3>Scan #{scanHistory.length - index}</h3>
 
           {scan.loading ? (
             <p style={{ color: "blue" }}>🔄 Scanning... Please wait</p>
