@@ -299,7 +299,7 @@ export default function Home() {
         height="480"
       ></canvas>
       {/* ✅ Scan button directly captures and sends the image */}
-      <button onClick={scanCard}>Scan Card</button>
+      {/*<button onClick={scanCard}>Scan Card</button>*/}
       {/* ✅ Show all scanned cards */}
       {[...scanHistory].reverse().map((scan, index) => (
         <div
