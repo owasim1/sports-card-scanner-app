@@ -31,8 +31,9 @@ export default function Home() {
     }
 
     const ctx = canvas.getContext("2d");
-    const width = 320;
-    const height = 240;
+    const width = 640;
+    const height = 480;
+
     canvas.width = width;
     canvas.height = height;
 
