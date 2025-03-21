@@ -152,18 +152,26 @@ export default function Home() {
       // Step 1: Draw full video frame to canvas
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Step 2: Define the crop box coordinates in canvas scale
-      const cropWidth = 180;
-      const cropHeight = 252;
+      // Step 2: Define crop box in canvas scale (normalized from the overlay)
+      const overlayBoxWidth = 180;
+      const overlayBoxHeight = 252;
 
+      // Convert overlay box size (in screen units) to canvas scale
+      const videoDisplayWidth = video.clientWidth;
+      const videoDisplayHeight = video.clientHeight;
+
+      const scaleX = canvas.width / videoDisplayWidth;
+      const scaleY = canvas.height / videoDisplayHeight;
+
+      const cropWidth = overlayBoxWidth * scaleX;
+      const cropHeight = overlayBoxHeight * scaleY;
       const cropX = (canvas.width - cropWidth) / 2;
-      const cropY = (canvas.height - cropHeight) / 2;
+      const cropY = 120 * scaleY; // match `top: 120px` of overlay
 
-      // Step 3: Create an offscreen canvas for cropping
+      // Step 3: Create offscreen canvas for cropping
       const cropCanvas = document.createElement("canvas");
       cropCanvas.width = cropWidth;
       cropCanvas.height = cropHeight;
-
       const cropCtx = cropCanvas.getContext("2d");
 
       // Step 4: Draw only the cropped region from main canvas
@@ -180,16 +188,16 @@ export default function Home() {
       );
 
       const croppedImageData = cropCanvas.toDataURL("image/jpeg");
-      setPreviewImage(croppedImageData); // 👈 Show preview
-      setTimeout(() => setPreviewImage(null), 1500); // 👈 Auto-hide
+      setPreviewImage(croppedImageData);
+      setTimeout(() => setPreviewImage(null), 1500);
 
       // Step 5: Store and scan
       const scanId = Date.now();
-      setScanHistory((prevHistory) => [
-        ...prevHistory,
+      setScanHistory((prev) => [
+        ...prev,
         { id: scanId, loading: true, image: croppedImageData },
       ]);
-      setLoadingScans((prevLoading) => [...prevLoading, scanId]);
+      setLoadingScans((prev) => [...prev, scanId]);
 
       try {
         setTimeout(async () => {
@@ -197,8 +205,8 @@ export default function Home() {
             imageUrl: croppedImageData,
           });
 
-          setScanHistory((prevHistory) =>
-            prevHistory.map((scan) =>
+          setScanHistory((prev) =>
+            prev.map((scan) =>
               scan.id === scanId
                 ? {
                     ...response.data,
@@ -209,9 +217,7 @@ export default function Home() {
                 : scan,
             ),
           );
-          setLoadingScans((prevLoading) =>
-            prevLoading.filter((id) => id !== scanId),
-          );
+          setLoadingScans((prev) => prev.filter((id) => id !== scanId));
         }, 100);
       } catch (error) {
         console.error("Error scanning card:", error);
