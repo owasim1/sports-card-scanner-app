@@ -47,13 +47,13 @@ export default function Home() {
         }
       }
 
-      // **🟩 Improved corner detection**
-      let topLeft = edgePixels.find((p) => p.x < 60 && p.y < 60);
-      let topRight = edgePixels.find((p) => p.x > 340 && p.y < 60);
-      let bottomLeft = edgePixels.find((p) => p.x < 60 && p.y > 240);
-      let bottomRight = edgePixels.find((p) => p.x > 340 && p.y > 240);
+      // **🟩 Improved corner detection with wider range**
+      let topLeft = edgePixels.find((p) => p.x < 80 && p.y < 80);
+      let topRight = edgePixels.find((p) => p.x > 320 && p.y < 80);
+      let bottomLeft = edgePixels.find((p) => p.x < 80 && p.y > 220);
+      let bottomRight = edgePixels.find((p) => p.x > 320 && p.y > 220);
 
-      // **✅ Check if we have a full rectangle**
+      // **✅ Check if we have at least 3 corners to avoid missing detections**
       const detectedCorners = [
         topLeft,
         topRight,
@@ -61,16 +61,18 @@ export default function Home() {
         bottomRight,
       ].filter(Boolean).length;
 
-      // **🔢 Ensure the aspect ratio matches ~2.5:3.5**
-      let detectedWidth = topRight && topLeft ? topRight.x - topLeft.x : 0;
-      let detectedHeight = bottomLeft && topLeft ? bottomLeft.y - topLeft.y : 0;
+      // **🔢 Ensure the aspect ratio is close to 2.5:3.5 but allow small tolerance**
+      let detectedWidth =
+        topRight && topLeft ? Math.abs(topRight.x - topLeft.x) : 0;
+      let detectedHeight =
+        bottomLeft && topLeft ? Math.abs(bottomLeft.y - topLeft.y) : 0;
 
       let aspectRatio =
         detectedWidth && detectedHeight ? detectedWidth / detectedHeight : 0;
 
-      // **✅ Strict check: 4 corners + aspect ratio between ~0.7 - 0.74 (2.5:3.5)**
-      const isCorrectAspectRatio = aspectRatio >= 0.7 && aspectRatio <= 0.74;
-      const isRectangleDetected = detectedCorners === 4 && isCorrectAspectRatio;
+      // **✅ Allow aspect ratio between ~0.65 - 0.75 to compensate for perspective distortion**
+      const isCorrectAspectRatio = aspectRatio >= 0.65 && aspectRatio <= 0.75;
+      const isRectangleDetected = detectedCorners >= 3 && isCorrectAspectRatio;
 
       setIsCardDetected(isRectangleDetected);
     }
