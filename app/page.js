@@ -14,6 +14,7 @@ export default function Home() {
   const autoScanTriggered = useRef(false);
   const [modalImage, setModalImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cardDetectedStart, setCardDetectedStart] = useState(null);
 
   const detectCardShape = () => {
     if (isProcessing.current) return;
@@ -28,8 +29,6 @@ export default function Home() {
     }
 
     const ctx = canvas.getContext("2d");
-
-    // Set canvas size to match video
     const width = 320;
     const height = 240;
     canvas.width = width;
@@ -41,7 +40,6 @@ export default function Home() {
 
     const edgePixels = [];
 
-    // Convert to grayscale + collect edge pixels
     for (let y = 0; y < height; y += 10) {
       for (let x = 0; x < width; x += 10) {
         const index = (y * width + x) * 4;
@@ -50,12 +48,11 @@ export default function Home() {
         if (avg > 220) {
           edgePixels.push({ x, y });
           ctx.fillStyle = "red";
-          ctx.fillRect(x, y, 1, 1); // Visualize edges
+          ctx.fillRect(x, y, 1, 1);
         }
       }
     }
 
-    // Detect corners based on quadrants
     const tolerance = 85;
     const topLeft = edgePixels.find((p) => p.x < tolerance && p.y < tolerance);
     const topRight = edgePixels.find(
@@ -68,34 +65,32 @@ export default function Home() {
       (p) => p.x > width - tolerance && p.y > height - tolerance,
     );
 
-    if (topLeft)
-      (ctx.fillStyle = "blue"), ctx.fillRect(topLeft.x, topLeft.y, 4, 4);
-    if (topRight)
-      (ctx.fillStyle = "blue"), ctx.fillRect(topRight.x, topRight.y, 4, 4);
-    if (bottomLeft)
-      (ctx.fillStyle = "blue"), ctx.fillRect(bottomLeft.x, bottomLeft.y, 4, 4);
-    if (bottomRight)
-      (ctx.fillStyle = "blue"),
-        ctx.fillRect(bottomRight.x, bottomRight.y, 4, 4);
-
     const cornersDetected = [topLeft, topRight, bottomLeft, bottomRight].filter(
       Boolean,
     ).length;
     const isRectangleDetected = cornersDetected >= 3;
+
     setIsCardDetected(isRectangleDetected);
 
-    // ✅ Automatically scan if card is detected and not already triggered
-    if (isRectangleDetected && !autoScanTriggered.current) {
-      autoScanTriggered.current = true;
-      scanCard().finally(() => {
-        // ✅ Re-allow auto-scan after short delay
-        setTimeout(() => {
-          autoScanTriggered.current = false;
-        }, 3000); // wait 3 seconds before allowing next auto scan
-      });
+    if (isRectangleDetected) {
+      if (!cardDetectedStart) {
+        setCardDetectedStart(Date.now());
+      } else {
+        const elapsed = Date.now() - cardDetectedStart;
+        if (elapsed >= 2000 && !autoScanTriggered.current) {
+          autoScanTriggered.current = true;
+          scanCard().finally(() => {
+            setTimeout(() => {
+              autoScanTriggered.current = false;
+              setCardDetectedStart(null); // reset timer after scan
+            }, 3000);
+          });
+        }
+      }
+    } else {
+      setCardDetectedStart(null); // reset timer if detection lost
     }
 
-    setIsCardDetected(isRectangleDetected);
     isProcessing.current = false;
   };
 
