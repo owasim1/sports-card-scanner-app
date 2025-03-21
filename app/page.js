@@ -12,6 +12,8 @@ export default function Home() {
   const [isCardDetected, setIsCardDetected] = useState(false);
   const captureCanvasRef = useRef(null);
   const autoScanTriggered = useRef(false);
+  const [modalImage, setModalImage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const detectCardShape = () => {
     if (isProcessing.current) return;
@@ -156,7 +158,7 @@ export default function Home() {
       const scanId = Date.now();
       setScanHistory((prevHistory) => [
         ...prevHistory,
-        { id: scanId, loading: true },
+        { id: scanId, loading: true, image: imageData },
       ]);
       setLoadingScans((prevLoading) => [...prevLoading, scanId]);
 
@@ -171,10 +173,16 @@ export default function Home() {
           setScanHistory((prevHistory) =>
             prevHistory.map((scan) =>
               scan.id === scanId
-                ? { ...response.data, id: scanId, loading: false }
+                ? {
+                    ...response.data,
+                    id: scanId,
+                    loading: false,
+                    image: scan.image,
+                  }
                 : scan,
             ),
           );
+
           setLoadingScans((prevLoading) =>
             prevLoading.filter((id) => id !== scanId),
           ); // ✅ Remove loading state
@@ -248,10 +256,9 @@ export default function Home() {
               <p>
                 <strong>Card Name:</strong>{" "}
                 {scan.ximilarData?._objects[0]._identification?.best_match
-                  ?.full_name
-                  ? scan.ximilarData._objects[0]._identification?.best_match
-                      ?.full_name
-                  : (scan.productData?.[0]?.["console-name"] ?? "Unknown")}
+                  ?.full_name ??
+                  scan.productData?.[0]?.["console-name"] ??
+                  "Unknown"}
               </p>
               <p>
                 <strong>Pricing:</strong> $
@@ -264,6 +271,14 @@ export default function Home() {
                       2,
                     ) ?? "N/A")}
               </p>
+              <button
+                onClick={() => {
+                  setModalImage(scan.image);
+                  setIsModalOpen(true);
+                }}
+              >
+                View Image
+              </button>
             </>
           )}
         </div>
