@@ -285,7 +285,7 @@ export async function POST(req) {
     // Fetch price from SportsCardsPro API
     const bestMatch = cardData._objects[0]._identification.best_match;
     const sportscardsproResponse = await axios.get(
-      `https://www.sportscardspro.com/api/products?t=${SPORTSCARDSPRO_API_KEY}&q=${encodeURIComponent(cardData._objects[0]._identification.best_match.full_name)}`,
+      `https://www.sportscardspro.com/api/products?t=${SPORTSCARDSPRO_API_KEY}&q=${encodeURIComponent(cardData._objects[0]._identification?.best_match)}`,
     );
 
     if (
