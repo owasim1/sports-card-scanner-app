@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import { Low, Memory } from "lowdb";
 import dotenv from "dotenv";
+import { sql } from "@vercel/postgres";
 
 dotenv.config();
 
@@ -268,7 +269,7 @@ export async function POST(req) {
     //     },
     //   },
     // };
-    // console.log(JSON.stringify(ximilarResponse.data), "JKSDAHDKJAS")
+    console.log(JSON.stringify(ximilarResponse.data));
     const cardData = ximilarResponse.data.records[0];
     if (!cardData) throw new Error("Card identification failed.");
 
@@ -283,9 +284,8 @@ export async function POST(req) {
     // Extract grading data
     //         const gradeData = gradeResponse.data.records[0]?.grades || {};
     // Fetch price from SportsCardsPro API
-    const bestMatch = cardData._objects[0]._identification.best_match;
     const sportscardsproResponse = await axios.get(
-      `https://www.sportscardspro.com/api/products?t=${SPORTSCARDSPRO_API_KEY}&q=${encodeURIComponent(cardData._objects[0]._identification.best_match.full_name)}`,
+      `https://www.sportscardspro.com/api/products?t=${SPORTSCARDSPRO_API_KEY}&q=${encodeURIComponent(cardData._objects[0]._identification?.best_match)}`,
     );
 
     if (
@@ -296,14 +296,25 @@ export async function POST(req) {
     }
 
     const productData = sportscardsproResponse.data.products;
-
+    const forwarded = req.headers.get("x-forwarded-for");
+    const clientIp = forwarded?.split(",")[0] || "unknown";
     // Save scan history
     const scanResult = {
       timestamp: new Date().toISOString(),
-      productData: productData,
+      ip: clientIp,
+      productData,
       ximilarData: cardData,
-      // grading: gradeData
     };
+
+    await sql`
+      INSERT INTO scans (ip, ximilar_data, product_data)
+      VALUES (
+               ${clientIp},
+               ${JSON.stringify(ximilarResponse.data.records[0])}::jsonb,
+               ${JSON.stringify(productData)}::jsonb
+             )
+    `;
+
     db.data.scans.push(scanResult);
     await db.write();
 
