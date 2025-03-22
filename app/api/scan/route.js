@@ -268,7 +268,7 @@ export async function POST(req) {
     //     },
     //   },
     // };
-    // console.log(JSON.stringify(ximilarResponse.data), "JKSDAHDKJAS")
+    console.log(JSON.stringify(ximilarResponse.data));
     const cardData = ximilarResponse.data.records[0];
     if (!cardData) throw new Error("Card identification failed.");
 
@@ -283,7 +283,6 @@ export async function POST(req) {
     // Extract grading data
     //         const gradeData = gradeResponse.data.records[0]?.grades || {};
     // Fetch price from SportsCardsPro API
-    const bestMatch = cardData._objects[0]._identification.best_match;
     const sportscardsproResponse = await axios.get(
       `https://www.sportscardspro.com/api/products?t=${SPORTSCARDSPRO_API_KEY}&q=${encodeURIComponent(cardData._objects[0]._identification?.best_match)}`,
     );
