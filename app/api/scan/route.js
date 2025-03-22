@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import { Low, Memory } from "lowdb";
 import dotenv from "dotenv";
+import { sql } from "@vercel/postgres";
 
 dotenv.config();
 
@@ -295,14 +296,25 @@ export async function POST(req) {
     }
 
     const productData = sportscardsproResponse.data.products;
-
+    const forwarded = req.headers.get("x-forwarded-for");
+    const clientIp = forwarded?.split(",")[0] || "unknown";
     // Save scan history
     const scanResult = {
       timestamp: new Date().toISOString(),
-      productData: productData,
+      ip: clientIp,
+      productData,
       ximilarData: cardData,
-      // grading: gradeData
     };
+
+    await sql`
+      INSERT INTO scans (ip, ximilar_data, product_data)
+      VALUES (
+               ${clientIp},
+               ${JSON.stringify(ximilarResponse.data.records[0])}::jsonb,
+               ${JSON.stringify(productData)}::jsonb
+             )
+    `;
+
     db.data.scans.push(scanResult);
     await db.write();
 

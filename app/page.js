@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import Link from "next/link";
 
 export default function Home() {
   const [scanHistory, setScanHistory] = useState([]); // Store all scans
@@ -15,6 +16,7 @@ export default function Home() {
   const [modalImage, setModalImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const cardDetectedStart = useRef(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [previewImage, setPreviewImage] = useState(null);
 
@@ -237,6 +239,22 @@ export default function Home() {
   return (
     <div className="container">
       <h1>Sports Card Scanner</h1>
+      <button
+        onClick={() => setIsSidebarOpen(true)}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          zIndex: 1001,
+          background: "none",
+          border: "none",
+          fontSize: "24px",
+          cursor: "pointer",
+        }}
+      >
+        ☰
+      </button>
+
       <video
         ref={videoRef}
         autoPlay
@@ -430,6 +448,64 @@ export default function Home() {
             </>
           )}
         </div>
+      )}
+      {isSidebarOpen && (
+        <>
+          {/* Dark overlay */}
+          <div
+            onClick={() => setIsSidebarOpen(false)}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
+              zIndex: 1000,
+            }}
+          ></div>
+
+          {/* Sidebar */}
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              width: "260px",
+              height: "100vh",
+              backgroundColor: "#fff",
+              color: "#000",
+              boxShadow: "-2px 0 5px rgba(0,0,0,0.3)",
+              padding: "20px",
+              zIndex: 1001,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              style={{
+                alignSelf: "flex-end",
+                background: "none",
+                border: "none",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
+
+            {/* Sidebar Content Here */}
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              <li>
+                <Link href="/">Home</Link>
+              </li>
+              <li>
+                <Link href="/history">History</Link>
+              </li>
+            </ul>
+          </div>
+        </>
       )}
     </div>
   );
