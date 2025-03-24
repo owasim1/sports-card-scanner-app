@@ -338,22 +338,66 @@ export default function Home() {
             <>
               <p>
                 <strong>Card Name:</strong>{" "}
-                {scan.ximilarData?._objects[0]._identification?.best_match
-                  ?.full_name ??
-                  scan.productData?.[0]?.["console-name"] ??
-                  "Unknown"}
+                {scan.cardInfo?.card_full_name || "N/A"}
               </p>
               <p>
-                <strong>Pricing:</strong> $
-                {scan.ximilarData?._objects[0]._identification?.best_match
-                  ?.pricing
-                  ? scan.ximilarData._objects[0]["_identification"][
-                      "best_match"
-                    ]?.pricing?.list?.[0]?.price
-                  : ((scan.productData?.[0]?.["loose-price"] / 100)?.toFixed(
-                      2,
-                    ) ?? "N/A")}
+                <strong>Player:</strong> {scan.cardInfo?.player || "N/A"}
               </p>
+              <p>
+                <strong>Team:</strong> {scan.cardInfo?.team || "N/A"}
+              </p>
+              <p>
+                <strong>Year:</strong> {scan.cardInfo?.year || "N/A"}
+              </p>
+              <p>
+                <strong>Brand:</strong> {scan.cardInfo?.brand || "N/A"}
+              </p>
+              <p>
+                <strong>Card Number:</strong>{" "}
+                {scan.cardInfo?.card_number || "N/A"}
+              </p>
+              <p>
+                <strong>Features:</strong>{" "}
+                {Array.isArray(scan.cardInfo?.features)
+                  ? scan.cardInfo.features.join(", ")
+                  : "N/A"}
+              </p>
+              {scan.productData?.[0] && (
+                <>
+                  <p>
+                    <strong>Pricing Info:</strong>
+                  </p>
+                  <ul style={{ paddingLeft: "20px" }}>
+                    <li>
+                      Ungraded: $
+                      {(scan.productData[0]["loose-price"] / 100).toFixed(2) ||
+                        "N/A"}
+                    </li>
+                    <li>
+                      Grade 8: $
+                      {(scan.productData[0]["new-price"] / 100).toFixed(2) ||
+                        "N/A"}
+                    </li>
+                    <li>
+                      Grade 9: $
+                      {(scan.productData[0]["graded-price"] / 100).toFixed(2) ||
+                        "N/A"}
+                    </li>
+                    <li>
+                      Grade 9.5: $
+                      {(scan.productData[0]["box-only-price"] / 100).toFixed(
+                        2,
+                      ) || "N/A"}
+                    </li>
+                    <li>
+                      Grade 10: $
+                      {(scan.productData[0]["manual-only-price"] / 100).toFixed(
+                        2,
+                      ) || "N/A"}
+                    </li>
+                  </ul>
+                </>
+              )}
             </>
           )}
 
