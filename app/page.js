@@ -360,7 +360,7 @@ export default function Home() {
                 <strong>Features:</strong>{" "}
                 {Array.isArray(scan.cardInfo?.features)
                   ? scan.cardInfo.features.join(", ")
-                  : "N/A"}
+                  : "-"}
               </p>
               {scan.productData?.[0] && (
                 <>
@@ -371,29 +371,29 @@ export default function Home() {
                     <li>
                       Ungraded: $
                       {(scan.productData[0]["loose-price"] / 100).toFixed(2) ||
-                        "N/A"}
+                        "-"}
                     </li>
                     <li>
                       Grade 8: $
                       {(scan.productData[0]["new-price"] / 100).toFixed(2) ||
-                        "N/A"}
+                        "-"}
                     </li>
                     <li>
                       Grade 9: $
                       {(scan.productData[0]["graded-price"] / 100).toFixed(2) ||
-                        "N/A"}
+                        "-"}
                     </li>
                     <li>
                       Grade 9.5: $
                       {(scan.productData[0]["box-only-price"] / 100).toFixed(
                         2,
-                      ) || "N/A"}
+                      ) || "-"}
                     </li>
                     <li>
                       Grade 10: $
                       {(scan.productData[0]["manual-only-price"] / 100).toFixed(
                         2,
-                      ) || "N/A"}
+                      ) || "-"}
                     </li>
                   </ul>
                 </>
